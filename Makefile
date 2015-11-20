@@ -9,7 +9,7 @@ all: $(PROJECT)
 %.o: %.cpp
 	g++ -std=c++11 -I$(CUDADIR)/include -c $<
 
-$(PROJECT): main.o cuda.o
+$(PROJECT): main.o check.o rotate.o
 	g++ $^ -lcudart -lcuda -lopencv_core -lopencv_highgui -L$(CUDADIR)/lib64 -o $@
 
 clean:

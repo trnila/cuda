@@ -4,21 +4,14 @@
 #include <cuda_runtime.h>
 using namespace cv;
 
-void run_cuda(uchar4 *img, int w, int h);
+void cuda_rotate(uchar4 *img, int w, int h);
 
-
-int main() {
-	Mat img = imread("img.jpg", CV_LOAD_IMAGE_COLOR);
-	if(! img.data ) {
-		std::cout << "err" << std::endl;
-		return 1;
-	}
-
-
+uchar4* matToArray(Mat &img) {
 	int w = img.size().width;
 	int h = img.size().height;
 
 	uchar4 *data = new uchar4[w * h];
+
 	for(int x = 0; x < w; x++) {
 		for(int y = 0; y < h; y++) {
 			Vec3b v3 = img.at<Vec3b>(y, x);
@@ -28,7 +21,12 @@ int main() {
 		}
 	}
 
-	run_cuda(data, w, h);
+	return data;
+}
+
+void arrayToMat(Mat &img, uchar4 *data) {
+	int w = img.size().width;
+	int h = img.size().height;
 
 	for(int x = 0; x < w; x++) {
 		for(int y = 0; y < h; y++) {
@@ -38,10 +36,23 @@ int main() {
 			img.at<Vec3b>(y, x) = v3;
 		}
 	}
+}
+
+int main() {
+	Mat img = imread("img.jpg", CV_LOAD_IMAGE_COLOR);
+	if(! img.data ) {
+		std::cout << "err" << std::endl;
+		return 1;
+	}
+
+	int w = img.size().width;
+	int h = img.size().height;
 
 
+	uchar4* data = matToArray(img);
+	cuda_rotate(data, w, h);
+	arrayToMat(img, data);
 
-
-	imshow("obrazek", img);
+	imshow("Image", img);
 	waitKey(0);
 }
