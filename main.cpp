@@ -2,9 +2,8 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <cuda_runtime.h>
+#include "cuda.h"
 using namespace cv;
-
-void cuda_rotate(uchar4 *img, int w, int h);
 
 uchar4* matToArray(Mat &img) {
 	int w = img.size().width;
@@ -50,7 +49,8 @@ int main() {
 
 
 	uchar4* data = matToArray(img);
-	cuda_rotate(data, w, h);
+	//cuda_rotate(data, w, h);
+	cuda_grayscale(data, w, h);
 	arrayToMat(img, data);
 
 	imshow("Image", img);
