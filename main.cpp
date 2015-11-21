@@ -15,9 +15,18 @@ int main() {
 	int w = img.size().width;
 	int h = img.size().height;
 
-	cuda_rotate((uchar3*) img.data, w, h);
-	cuda_grayscale((uchar3*) img.data, w, h);
+	//cuda_rotate((uchar3*) img.data, w, h);
+	//cuda_grayscale((uchar3*) img.data, w, h);
 
-	imshow("Image", img);
+
+	int rw = w/2;
+	int rh = h/2;
+	uchar3 *resized = cuda_resize((uchar3*) img.data, w, h, rw, rh);
+
+	Mat smaller(rh, rw, CV_8UC3);
+	smaller.data = (uchar*) resized;
+
+	imshow("Image1", img);
+	imshow("Image", smaller);
 	waitKey(0);
 }

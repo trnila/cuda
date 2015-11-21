@@ -1,53 +1,39 @@
 #include <cuda_runtime.h>
 #include "check.h"
 
-
-#include <stdio.h>
-__global__ void kernel(uchar4 *orig, uchar4 *resized, int w, int h) {
-	int x = blockDim.x * blockIdx.x;
-	int y = blockDim.y * blockIdx.y;
-
-	uchar4 a = {0, 0, 0, 0};
-	int vx = 0;
-	int vy = 0;
-	int vz = 0;
-
-	for(int i = x; i < x + 100; i++) {
-		for(int j = y; j < y + 100; j++) {
-			vx += orig[j * w + i].x;
-			vy += orig[j * w + i].y;
-			vz += orig[j * w + i].z;
-
-			//a.x = (a.x + orig[j * w + i].x) % 255;
-			//a.y = (a.y + orig[j * w + i].y) % 255;
-			//a.z = (a.z + orig[j * w + i].z) % 255;
-		}
+__global__ void kernel(uchar3 *orig, uchar3 *resized, int w, int h, int w1, int h1) {
+	int x = blockDim.x * blockIdx.x + threadIdx.x;
+	int y = blockDim.y * blockIdx.y + threadIdx.y;
+	if(x >= w1 || y >= h1) {
+		return;
 	}
 
-	//a.x = b / 100;
-	//a.x = (vx / 100) % 255;
-	//a.y = vy / 100;
-	//a.z = vz / 100;
-	a.x = 255;
+	uchar3 px1 = orig[y*2 * w + x*2];
+	uchar3 px2 = orig[(y*2 + 1) * w + x*2 + 1];
 
-	printf("%d\n", a.x);
-
-	resized[y * w + x] = a;
+	resized[y * w1 + x].x = (px1.x + px2.x) / 2;
+	resized[y * w1 + x].y = (px1.y + px2.y) / 2;
+	resized[y * w1 + x].z = (px1.z + px2.z) / 2;
 }
 
-void cuda_resize(uchar4 *img, uchar4 *dst, int w, int h, int w1, int h1) {
-	uchar4 *orig = NULL;
-	uchar4 *resized = NULL;
-	checkErr(cudaMalloc(&orig, sizeof(uchar4) * w * h));
-	checkErr(cudaMalloc(&resized, sizeof(uchar4) * w1 * h1));
+uchar3* cuda_resize(uchar3 *img, int w, int h, int w1, int h1) {
+	uchar3 *dst = new uchar3[w1 * h1];
+
+	uchar3 *orig = NULL;
+	uchar3 *resized = NULL;
+	checkErr(cudaMalloc(&orig, sizeof(uchar3) * w * h));
+	checkErr(cudaMalloc(&resized, sizeof(uchar3) * w1 * h1));
+
+	checkErr(cudaMemcpy(orig, img, sizeof(uchar3) * w * h, cudaMemcpyHostToDevice));
 
 	int count = 10;
-	dim3 blocks(w / count, h / count);
+	dim3 blocks((w1 + count)/ count, (h1 + count) / count);
 	dim3 threads(count, count);
-	kernel<<<blocks, threads>>>(orig, resized, w1, h1);
+	kernel<<<blocks, threads>>>(orig, resized, w, h, w1, h1);
 	checkErr(cudaPeekAtLastError());
-	checkErr(cudaMemcpy(dst, resized, sizeof(uchar4)*w1*h1, cudaMemcpyDeviceToHost));
+	checkErr(cudaMemcpy(dst, resized, sizeof(uchar3)*w1*h1, cudaMemcpyDeviceToHost));
 	checkErr(cudaFree(orig));
 	checkErr(cudaFree(resized));
 
+	return dst;
 }
