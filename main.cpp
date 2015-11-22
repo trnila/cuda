@@ -17,6 +17,7 @@ int main() {
 
 	//cuda_rotate((uchar3*) img.data, w, h);
 	//cuda_grayscale((uchar3*) img.data, w, h);
+	cuda_border((uchar3*) img.data, w, h);
 
 
 	int rw = w/2;
