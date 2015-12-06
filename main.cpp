@@ -17,17 +17,22 @@ int main() {
 
 	//cuda_rotate((uchar3*) img.data, w, h);
 	//cuda_grayscale((uchar3*) img.data, w, h);
-	cuda_border((uchar3*) img.data, w, h);
+	//cuda_border((uchar3*) img.data, w, h);
 
 
-	int rw = w/2;
-	int rh = h/2;
+	/*int rw = w/4;
+	int rh = h/4;
 	uchar3 *resized = cuda_resize((uchar3*) img.data, w, h, rw, rh);
 
 	Mat smaller(rh, rw, CV_8UC3);
-	smaller.data = (uchar*) resized;
+	smaller.data = (uchar*) resized;*/
 
-	imshow("Image1", img);
-	imshow("Image", smaller);
+	uchar3 *sloped = cuda_slope((uchar3*) img.data, w, h);
+
+	Mat slopImg(h, w, CV_8UC3);
+	slopImg.data = (uchar*) sloped;
+
+	//imshow("Image1", img);
+	imshow("Image", slopImg);
 	waitKey(0);
 }

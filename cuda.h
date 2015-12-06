@@ -5,5 +5,6 @@
 	void cuda_grayscale(uchar3 *img, int w, int h);
 	uchar3* cuda_resize(uchar3 *img, int w, int h, int w1, int h1);
 	void cuda_border(uchar3 *img, int w, int h);
+	uchar3* cuda_slope(uchar3 *img, int w, int h);
 
 #endif
